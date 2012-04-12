@@ -15,6 +15,7 @@
 	CGSize size;
 	size.width = [[self stringByEvaluatingJavaScriptFromString:@"window.innerWidth"] integerValue];
 	size.height = [[self stringByEvaluatingJavaScriptFromString:@"window.innerHeight"] integerValue];
+    NSLog(@"size.width:%f, size.height:%f",size.width,size.height);
 	return size;
 }
 
@@ -23,6 +24,7 @@
 	CGPoint pt;
 	pt.x = [[self stringByEvaluatingJavaScriptFromString:@"window.pageXOffset"] integerValue];
 	pt.y = [[self stringByEvaluatingJavaScriptFromString:@"window.pageYOffset"] integerValue];
+    NSLog(@"pt.x:%f, pt.y:%f",pt.x,pt.y);
 	return pt;
 }
 @end

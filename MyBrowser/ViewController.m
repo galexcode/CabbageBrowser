@@ -18,17 +18,19 @@
 @synthesize titleLabel;
 @synthesize urlInput;
 @synthesize collectBut;
-@synthesize webview;
-@synthesize scrollview;
+@synthesize webView;
+@synthesize scrollView;
+@synthesize emailView;
 @synthesize back;
 @synthesize forward;
 @synthesize favBut;
 @synthesize historyBut;
-@synthesize windowsBut;
 @synthesize isBackClicked;
 @synthesize isJumpOut;
 
 @synthesize refreshBut;
+@synthesize emailBut;
+@synthesize emailLable;
 @synthesize stackDepth;
 
 - (void)didReceiveMemoryWarning
@@ -42,13 +44,14 @@
 - (void)viewDidLoad
 {
 	// Do any additional setup after loading the view, typically from a nib.
-    [self.scrollview setBackgroundColor: [UIColor colorWithPatternImage: [UIImage imageNamed: @"backgroud.png"]]];
-    self.webview.delegate = self;
+    [self.scrollView setBackgroundColor: [UIColor colorWithPatternImage: [UIImage imageNamed: @"backgroud.png"]]];
+    [self.emailView setBackgroundColor: [UIColor colorWithPatternImage: [UIImage imageNamed: @"backgroud.png"]]];
+    self.webView.delegate = self;
     self.isBackClicked = false;
     self.isJumpOut = false;
     [self addQuickItem];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextualMenuAction:) name:@"TapAndHoldNotification" object:nil];
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextualMenuAction:) name:@"TapAndHoldNotification" object:nil];
     
     [super viewDidLoad];
 }
@@ -63,43 +66,43 @@
 	NSString *jsCode = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
 	
 	NSLog(@"%@!!",jsCode);
-	[webview stringByEvaluatingJavaScriptFromString: jsCode];
+	[self.webView stringByEvaluatingJavaScriptFromString: jsCode];
 	
 	
 	
 	
 	// get the Tags at the touch location
-	NSString *tags = [NSString stringWithString:[webview stringByEvaluatingJavaScriptFromString:
+	NSString *tags = [NSString stringWithString:[self.webView stringByEvaluatingJavaScriptFromString:
                                                  [NSString stringWithFormat:@"MyAppGetHTMLElementsAtPoint(%i,%i);",(NSInteger)pt.x,(NSInteger)pt.y]]];
 	
 	
 	NSLog(@"%@,%d,%d~~~~~~~~",tags,(NSInteger)pt.x,(NSInteger)pt.y);
 	
 	// create the UIActionSheet and populate it with buttons related to the tags
-	UIActionSheet *sheet = [[UIActionSheet alloc] initWithTitle:@"Contextual Menu"
-													   delegate:self cancelButtonTitle:@"Cancel"
-										 destructiveButtonTitle:nil otherButtonTitles:nil];
-	
-	// If a link was touched, add link-related buttons
-	if ([tags rangeOfString:@",A,"].location != NSNotFound) {
-		[sheet addButtonWithTitle:@"Open Link"];
-		[sheet addButtonWithTitle:@"Open Link in Tab"];
-		[sheet addButtonWithTitle:@"Download Link"];
-	}
-	// If an image was touched, add image-related buttons
-	if ([tags rangeOfString:@",IMG,"].location != NSNotFound) {
-		[sheet addButtonWithTitle:@"Save Picture"];
-	}
-	// Add buttons which should be always available
-	[sheet addButtonWithTitle:@"Save Page as Bookmark"];
-	[sheet addButtonWithTitle:@"Open Page in Safari"];
-	
-	[sheet showInView:webview];
+//	UIActionSheet *sheet = [[UIActionSheet alloc] initWithTitle:@"Contextual Menu"
+//													   delegate:self cancelButtonTitle:@"Cancel"
+//										 destructiveButtonTitle:nil otherButtonTitles:nil];
+//	
+//	// If a link was touched, add link-related buttons
+//	if ([tags rangeOfString:@",A,"].location != NSNotFound) {
+//		[sheet addButtonWithTitle:@"Open Link"];
+//		[sheet addButtonWithTitle:@"Open Link in Tab"];
+//		[sheet addButtonWithTitle:@"Download Link"];
+//	}
+//	// If an image was touched, add image-related buttons
+//	if ([tags rangeOfString:@",IMG,"].location != NSNotFound) {
+//		[sheet addButtonWithTitle:@"Save Picture"];
+//	}
+//	// Add buttons which should be always available
+//	[sheet addButtonWithTitle:@"Save Page as Bookmark"];
+//	[sheet addButtonWithTitle:@"Open Page in Safari"];
+//	
+//	[sheet showInView:webview];
 }
 
 - (void)contextualMenuAction:(NSNotification*)notification
 {
-    if(self.webview.isHidden || isJumpOut){
+    if(self.webView.isHidden || isJumpOut){
         return;
     }
 	CGPoint pt;
@@ -108,12 +111,12 @@
 	pt.y = [[coord objectForKey:@"y"] floatValue];
 	
 	// convert point from window to view coordinate system
-	pt = [webview convertPoint:pt fromView:nil];
+	pt = [self.webView convertPoint:pt fromView:nil];
 	
 	// convert point from view to HTML coordinate system
-	CGPoint offset  = [webview scrollOffset];
-	CGSize viewSize = [webview frame].size;
-	CGSize windowSize = [webview windowSize];
+	CGPoint offset  = [self.webView scrollOffset];
+	CGSize viewSize = [self.webView frame].size;
+	CGSize windowSize = [self.webView windowSize];
 	
 	CGFloat f = windowSize.width / viewSize.width;
 	pt.x = pt.x * f + offset.x;
@@ -140,9 +143,9 @@
         btn.tag = i;
         [btn addTarget:self action:@selector(quickPressed:) forControlEvents:UIControlEventTouchUpInside];
         
-        [self.scrollview addSubview:btn];
+        [self.scrollView addSubview:btn];
     }
-    self.scrollview.contentSize = CGSizeMake(320, floor(array.count/2)*135+45);
+    self.scrollView.contentSize = CGSizeMake(320, floor(array.count/2)*135+45);
     
     [self setWebViewHiden:YES];
 }
@@ -171,29 +174,32 @@
     }
     if (!urlStr) {
         return;
+    } else if ([urlStr isEqualToString:@"email:"]) {
+        [self showEmailView];
+        return;
     } else {
         self.urlInput.text = urlStr;
     }
     
     //清空webview
-    [self.webview stringByEvaluatingJavaScriptFromString:@"document.open();document.close()"];
+    [self.webView stringByEvaluatingJavaScriptFromString:@"document.open();document.close()"];
     
     //播放动画
-    self.webview.alpha = 0;
+    self.webView.alpha = 0;
     CGAffineTransform oneTransform = CGAffineTransformMakeScale(0.1, 0.1);
     CGAffineTransform twoTransform = CGAffineTransformMakeTranslation(0, 0);
     CGAffineTransform newTransform = CGAffineTransformConcat(oneTransform, twoTransform);
-    self.webview.transform = newTransform;
+    self.webView.transform = newTransform;
     
     [UIView beginAnimations:nil context:nil];
     [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
     [UIView setAnimationDuration:0.5];
     
-    self.webview.alpha = 1;
+    self.webView.alpha = 1;
     oneTransform = CGAffineTransformMakeScale(1, 1);
     twoTransform = CGAffineTransformMakeTranslation(0, 0);
     newTransform = CGAffineTransformConcat(oneTransform, twoTransform);
-    self.webview.transform = newTransform;
+    self.webView.transform = newTransform;
     [UIView commitAnimations];
     
     [self loadUrl:[NSURL URLWithString:urlStr]];
@@ -203,7 +209,7 @@
 //随机网址计算
 - (NSString *)randomUrlStr
 {
-    NSArray *defaultUrl = [[NSArray alloc]initWithObjects:@"http://3g.sina.com.cn/", @"http://3g.163.com/", @"http://3g.qq.com/", @"http://www.mac.com.cn/", nil];
+    NSArray *defaultUrl = [[NSArray alloc]initWithObjects:@"http://3g.sina.com.cn/", @"http://3g.163.com/", @"http://3g.qq.com/", @"http://www.mac.com.cn/", @"email:", nil];
     int randomNum;
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -211,7 +217,13 @@
     if (!savedHisWebsites) {
         randomNum = arc4random() % (defaultUrl.count);
     } else {
-        randomNum = arc4random() % (defaultUrl.count + savedHisWebsites.count);
+        //简化处理，我让大部分几率(>50%)都可能命中随机库
+        randomNum = arc4random() % 2;
+        if (randomNum == 0) {
+            randomNum = arc4random() % (defaultUrl.count);
+        } else {
+            randomNum = arc4random() % (defaultUrl.count + savedHisWebsites.count);
+        }
     }
     
     NSString *result;
@@ -237,13 +249,14 @@
 
 - (void)setWebViewHiden:(BOOL)hiden
 {
-    [self.webview setHidden:hiden];
-    [self.scrollview setHidden:!hiden];
+    [self.webView setHidden:hiden];
+    [self.scrollView setHidden:!hiden];
     if (hiden) {
         [self.collectBut setEnabled:NO];
         [self setTitleAndUrl:nil];
     } else {
-        [self setTitleAndUrl:self.webview];
+        [self setTitleAndUrl:self.webView];
+        [self.emailView setHidden:YES];
     }
 }
 
@@ -252,14 +265,16 @@
     [self setTitleLabel:nil];
     [self setUrlInput:nil];
     [self setCollectBut:nil];
-    [self setWebview:nil];
-    [self setScrollview:nil];
+    [self setWebView:nil];
+    [self setScrollView:nil];
+    [self setEmailView:nil];
     [self setBack:nil];
     [self setForward:nil];
     [self setFavBut:nil];
     [self setHistoryBut:nil];
     [self setRefreshBut:nil];
-    [self setWindowsBut:nil];
+    [self setEmailBut:nil];
+    [self setEmailLable:nil];
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -355,25 +370,29 @@
 { 
     [self setWebViewHiden:NO];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
-    [self.webview loadRequest:request];
+    [self.webView loadRequest:request];
 }
 
 - (IBAction)goBack:(id)sender 
 {
-    if ([self.webview canGoBack]) {
-        [self.webview goBack];
+    if (!self.emailView.isHidden) {
+        [self.emailView setHidden:YES];
+    } else if ([self.webView canGoBack]) {
+        [self.webView goBack];
     } else {
         [self setWebViewHiden:YES];
+        //结束刷新动画
+        [self.refreshBut.layer removeAnimationForKey:@"rotateAnimation"];
     }
     [self setGoBackStutas];
 }
 
 - (IBAction)goForward:(id)sender 
 {
-    if ([self.webview isHidden]) {
+    if ([self.webView isHidden]) {
         [self setWebViewHiden:NO];
     } else {
-        [self.webview goForward];
+        [self.webView goForward];
     }
     [self setGoBackStutas];
 }
@@ -384,7 +403,7 @@
         self.titleLabel.text = [wv stringByEvaluatingJavaScriptFromString:@"document.title"];
         self.urlInput.text = wv.request.URL.absoluteString;
     } else {
-        self.titleLabel.text = @"Please enter a URL";
+        self.titleLabel.text = @"请输入网址";
         self.urlInput.text = nil;
     }
 }
@@ -407,18 +426,98 @@
     [self presentModalViewController:view animated:YES];
 }
 
-- (IBAction)gotoPages:(id)sender
+- (IBAction)sendEmail:(id)sender
 {
-    PagesController *view = [[PagesController alloc] initWithNibName:@"PagesController" bundle:[NSBundle mainBundle]];
-//    view.backToMainDelegate = self;
-    self.isJumpOut = YES;
-    [self presentModalViewController:view animated:NO];
+    MFMailComposeViewController *picker = [[MFMailComposeViewController alloc] init];
+    picker.mailComposeDelegate = self;
+    
+    [picker setSubject:@"关于Feng Browser我有一些建议"];
+    
+    // Set up recipients
+    NSArray *toRecipients = [NSArray arrayWithObject:@"jun.deng@dianping.com"];
+    
+    [picker setToRecipients:toRecipients];
+    
+    // Attach an image to the email
+//    NSString *path = [[NSBundle mainBundle] pathForResource:@"" ofType:@"png"];
+//    NSData *myData = [NSData dataWithContentsOfFile:path];
+//    [picker addAttachmentData:myData mimeType:@"image/png" fileName:@""];
+    
+    // Fill out the email body text
+    
+    [self presentModalViewController:picker animated:YES];
 }
 
-- (void)webViewDidFinishLoad:(UIWebView *)webView
+//send email result
+- (void)mailComposeController:(MFMailComposeViewController*)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error 
+{   
+    [self dismissModalViewControllerAnimated:YES];
+    
+    if (result == MFMailComposeResultSent) {
+        CABasicAnimation *theAnimation1=[CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+        theAnimation1.toValue = [NSNumber numberWithFloat:(2 * M_PI)];
+        
+        theAnimation1.duration=0.3;
+        theAnimation1.repeatCount = 5;
+        
+        CABasicAnimation *theAnimation2=[CABasicAnimation animationWithKeyPath:@"transform.scale"]; 
+        theAnimation2.fromValue=[NSNumber numberWithFloat:1];
+        theAnimation2.toValue = [NSNumber numberWithDouble:0];
+        theAnimation2.duration=1.5;
+        
+        CABasicAnimation *theAnimation3=[CABasicAnimation animationWithKeyPath:@"transform.translation.x"]; 
+        theAnimation3.fromValue=[NSNumber numberWithFloat:0];
+        theAnimation3.toValue = [NSNumber numberWithDouble:90];
+        theAnimation3.duration=1.5;
+        
+        CABasicAnimation *theAnimation4=[CABasicAnimation animationWithKeyPath:@"transform.translation.y"]; 
+        theAnimation4.fromValue=[NSNumber numberWithFloat:0];
+        theAnimation4.toValue = [NSNumber numberWithDouble:20];
+        theAnimation4.duration=1.5;
+        
+        [self.emailBut.layer addAnimation:theAnimation1 forKey:@"emailButAnimation1"];
+        [self.emailBut.layer addAnimation:theAnimation2 forKey:@"emailButAnimation2"];
+        [self.emailBut.layer addAnimation:theAnimation3 forKey:@"emailButAnimation3"];
+        [self.emailBut.layer addAnimation:theAnimation4 forKey:@"emailButAnimation4"];
+        
+        NSArray *says = [[NSArray alloc]initWithObjects:@"还有什么要说的么，亲？", @"再接再厉，我等着你呢", @"我不是每次都会来的", @"还要告诉我什么好东西么？", @"你可以继续点下面的按钮", nil];
+        self.emailLable.text = [says objectAtIndex:arc4random() % (says.count)];
+    }
+    
+}
+
+- (void)showEmailView
+{
+    [self.emailView setHidden:NO];
+    [self.back setEnabled:YES];
+    [self.forward setEnabled:NO];
+    
+    //动画
+    CABasicAnimation *theAnimation1=[CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+    theAnimation1.toValue = [NSNumber numberWithFloat:(2 * M_PI)];
+    
+    theAnimation1.duration=0.3;
+    theAnimation1.repeatCount = 5;
+    
+    CABasicAnimation *theAnimation2=[CABasicAnimation animationWithKeyPath:@"transform.scale"]; 
+    theAnimation2.fromValue=[NSNumber numberWithFloat:0.1];
+    theAnimation2.toValue = [NSNumber numberWithDouble:1.0];
+    theAnimation2.duration=1.5;
+    
+    CABasicAnimation *theAnimation3=[CABasicAnimation animationWithKeyPath:@"transform.translation.x"]; 
+    theAnimation3.fromValue=[NSNumber numberWithFloat:-40];
+    theAnimation3.toValue = [NSNumber numberWithDouble:0];
+    theAnimation3.duration=1.5;
+    
+    [self.emailBut.layer addAnimation:theAnimation1 forKey:@"emailButAnimation1"];
+    [self.emailBut.layer addAnimation:theAnimation2 forKey:@"emailButAnimation2"];
+    [self.emailBut.layer addAnimation:theAnimation3 forKey:@"emailButAnimation3"];
+}
+
+- (void)webViewDidFinishLoad:(UIWebView *)w
 {
 //    title.text = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
-    [self setTitleAndUrl:webView];
+    [self setTitleAndUrl:w];
     [self setGoBackStutas];
     
     //检查该网址是否已经收藏过
@@ -464,7 +563,13 @@
     NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
     NSDateComponents *components = [calendar components:units fromDate:now];
     
-    Website *site = [[Website alloc]initWithTitle:self.titleLabel.text ? self.titleLabel.text : self.urlInput.text url:self.urlInput.text year:components.year month:components.month week:components.week day:components.day weekday:components.weekday];
+    NSString *titlrStr;
+    if (!self.titleLabel.text || [self.titleLabel.text isEqualToString:@""]) {
+        titlrStr = self.urlInput.text;
+    } else {
+        titlrStr = self.titleLabel.text;
+    }
+    Website *site = [[Website alloc]initWithTitle:titlrStr url:self.urlInput.text year:components.year month:components.month week:components.week day:components.day weekday:components.weekday];
     NSData *udObject = [NSKeyedArchiver archivedDataWithRootObject:site];
     [savedHisWebsites addObject:udObject];
     [defaults setObject:savedHisWebsites forKey:@"hiswebsites"];
@@ -476,7 +581,7 @@
     [self.refreshBut.layer removeAnimationForKey:@"rotateAnimation"];
 }
 
-- (void)webViewDidStartLoad:(UIWebView *)webView
+- (void)webViewDidStartLoad:(UIWebView *)w
 {
     //刷新动画
     int direction = -1;
@@ -489,7 +594,7 @@
     
     [self setGoBackStutas];
     [self.collectBut setEnabled:NO];
-    [webView stringByEvaluatingJavaScriptFromString:@"document.body.style.webkitTouchCallout='none';"];
+    [w stringByEvaluatingJavaScriptFromString:@"document.body.style.webkitTouchCallout='none';"];
 }
 
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
@@ -501,17 +606,13 @@
 
 - (void)setGoBackStutas
 {
-    if (self.webview.canGoBack) {
+    if (self.webView.canGoBack || !self.webView.isHidden) {
         [self.back setEnabled:YES];
     } else {
-        if ([self.webview isHidden]) {
-            [self.back setEnabled:NO];
-        } else {
-            [self.back setEnabled:YES];
-        }
+        [self.back setEnabled:NO];
     }
     
-    if (self.webview.canGoForward) {
+    if (self.webView.canGoForward || self.webView.isHidden) {
         [self.forward setEnabled:YES];
     } else {
         [self.forward setEnabled:NO]; 

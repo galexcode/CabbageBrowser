@@ -19,10 +19,9 @@
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"TapAndHoldNotification" object:coord];
 }
 
-- (void)sendEvent:(UIEvent *)event
+/*- (void)sendEvent:(UIEvent *)event
 {
 	NSSet *touches = [event touchesForWindow:self];
-	[touches retain];
 	
 	[super sendEvent:event];    // Call super to make sure the event is processed as usual
 	
@@ -36,7 +35,7 @@
 				contextualMenuTimer = [NSTimer scheduledTimerWithTimeInterval:0.8
 																	   target:self selector:@selector(tapAndHoldAction:)
 																	 userInfo:nil repeats:NO];
-				break;
+				return;
 				
 			case UITouchPhaseEnded:
 			case UITouchPhaseMoved:
@@ -44,11 +43,12 @@
 				[contextualMenuTimer invalidate];
 				contextualMenuTimer = nil;
 				break;
+                
 		}
 	} else {                    // Multiple fingers are touching the screen
 		[contextualMenuTimer invalidate];
 		contextualMenuTimer = nil;
 	}
-	[touches release];
-}
+}*/
+
 @end
