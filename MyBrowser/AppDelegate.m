@@ -17,13 +17,42 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+   /* NSArray *familyNames =[[NSArray alloc]initWithArray:[UIFont familyNames]];
+    NSArray *fontNames;
+    NSInteger indFamily, indFont;
+    for(indFamily=0;indFamily<[familyNames count];++indFamily)
+    {
+        NSLog(@"Family name: %@", [familyNames objectAtIndex:indFamily]);
+        fontNames =[[NSArray alloc]initWithArray:[UIFont fontNamesForFamilyName:[familyNames objectAtIndex:indFamily]]];
+        for(indFont=0; indFont<[fontNames count]; ++indFont)
+        {
+            NSLog(@" Font name: %@",[fontNames objectAtIndex:indFont]);
+        }
+    }*/
+    
+    
+//    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
+    
+//    ViewController *rootView = [[ViewController alloc] initWithNibName:@"ViewController" bundle:nil];
+//    UINavigationController *navView = [[UINavigationController alloc] initWithRootViewController:rootView];
+    
+    //方法1
     self.viewController = [[ViewController alloc] initWithNibName:@"ViewController" bundle:nil];
+
+    
     self.window.rootViewController = self.viewController;
     [self.window makeKeyAndVisible];
+    
+    //方法2
+//    [window addSubview:viewController.view];
+//    [window makeKeyAndVisible];
+    
+//    [self performSelector:@selector(openMenu) withObject:nil afterDelay:1];
+    
     return YES;
 }
+
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
@@ -31,6 +60,7 @@
      Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
      Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
      */
+    [NSThread sleepForTimeInterval:2.0];
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
