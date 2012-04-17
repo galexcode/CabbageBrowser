@@ -18,6 +18,7 @@
 @synthesize titleLabel;
 @synthesize urlInput;
 @synthesize collectBut;
+@synthesize webViewContainer;
 @synthesize webView;
 @synthesize scrollView;
 @synthesize emailView;
@@ -46,7 +47,7 @@
 	// Do any additional setup after loading the view, typically from a nib.
     [self.scrollView setBackgroundColor: [UIColor colorWithPatternImage: [UIImage imageNamed: @"backgroud.png"]]];
     [self.emailView setBackgroundColor: [UIColor colorWithPatternImage: [UIImage imageNamed: @"backgroud.png"]]];
-    self.webView.delegate = self;
+    [self resetWebView];
     self.isBackClicked = false;
     self.isJumpOut = false;
     [self addQuickItem];
@@ -152,6 +153,8 @@
 
 - (void)quickPressed:(id)sender
 {
+    [self resetWebView];
+    
     UIButton *btn = (UIButton *)sender;
     int index = btn.tag;
     NSString *urlStr;
@@ -283,7 +286,7 @@
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     // Return YES for supported orientations
-    return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
+    return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
 - (IBAction)collect:(id)sender {
@@ -358,6 +361,8 @@
 }
 
 - (IBAction)go:(id)sender {
+    [self resetWebView];
+    
     NSMutableString *text = [[NSMutableString alloc] initWithString:self.urlInput.text];
     if (![text hasPrefix:@"http"]) {
         [text insertString:@"http://" atIndex:0];
@@ -431,10 +436,10 @@
     MFMailComposeViewController *picker = [[MFMailComposeViewController alloc] init];
     picker.mailComposeDelegate = self;
     
-    [picker setSubject:@"关于Feng Browser我有一些建议"];
+    [picker setSubject:@"关于卷心菜浏览器我有一些建议"];
     
     // Set up recipients
-    NSArray *toRecipients = [NSArray arrayWithObject:@"jun.deng@dianping.com"];
+    NSArray *toRecipients = [NSArray arrayWithObject:@"dengjun86@gmail.com"];
     
     [picker setToRecipients:toRecipients];
     
@@ -635,6 +640,20 @@
     if (self.urlInput.text) {
         [self loadUrl:[NSURL URLWithString:self.urlInput.text]];
     }
+}
+
+- (void)resetWebView
+{
+    if (webView) {
+        [webView removeFromSuperview];
+        webView = nil;
+    }
+    
+    webView = [[UIWebView alloc] initWithFrame:CGRectMake(0, 0, 320, 380)];
+    webView.delegate = self;
+    webView.hidden = YES;
+    
+    [[self webViewContainer] addSubview:webView];
 }
 
 @end

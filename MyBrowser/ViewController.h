@@ -26,7 +26,10 @@
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 @property (weak, nonatomic) IBOutlet UITextField *urlInput;
 @property (weak, nonatomic) IBOutlet UIButton *collectBut;
-@property (weak, nonatomic) IBOutlet UIWebView *webView;
+
+@property (strong, nonatomic) IBOutlet UIView *webViewContainer;
+@property (strong, nonatomic) UIWebView *webView;
+
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (weak, nonatomic) IBOutlet UIView *emailView;
 @property (weak, nonatomic) IBOutlet UIButton *back;
@@ -64,4 +67,5 @@
 - (BOOL)addFavItem:(NSUserDefaults *)defaults withTitle:(NSString *)title urlStr:(NSString *)urlStr;
 - (BOOL)removeFavItem:(NSUserDefaults *)defaults withTitle:(NSString *)title urlStr:(NSString *)urlStr;
 
+- (void)resetWebView;
 @end
