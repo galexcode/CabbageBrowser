@@ -626,6 +626,9 @@
 
 -(void)onClick:(NSString *)urlStr
 {
+    if (webView.hidden) {
+        [self resetWebView];
+    }
     self.urlInput.text = urlStr;
     [self loadUrl:[NSURL URLWithString:urlStr]];
 }

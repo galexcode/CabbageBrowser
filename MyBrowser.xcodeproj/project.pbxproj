@@ -450,6 +450,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MyBrowser/MyBrowser-Prefix.pch";
 				INFOPLIST_FILE = "MyBrowser/MyBrowser-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = "卷心菜浏览器";
 				WRAPPER_EXTENSION = app;
 			};
@@ -461,6 +462,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MyBrowser/MyBrowser-Prefix.pch";
 				INFOPLIST_FILE = "MyBrowser/MyBrowser-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = "卷心菜浏览器";
 				WRAPPER_EXTENSION = app;
 			};
